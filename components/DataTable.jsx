@@ -85,7 +85,8 @@ export function DataTable({ data }) {
     const [reverseSortDirection, setReverseSortDirection] = useState(false);
     const [opened, { open, close }] = useDisclosure(false);
 
-
+    const router = useRouter()
+    
     const setSorting = (field) => {
         const reversed = field === sortBy ? !reverseSortDirection : false;
         setReverseSortDirection(reversed);
@@ -174,7 +175,7 @@ export function DataTable({ data }) {
                         <Flex justify="center" align="center" gap={'md'}>
                             <Button variant='outline' color='blue'>Add to Favorite</Button>
                             <Link href={`/${user.id}`} target='_blank'>
-                                <Button variant='outline' color='blue' onClick={open}>generate Report</Button>
+                                <Button variant='outline' color='blue' onClick={close}>generate Report</Button>
                             </Link>
                         </Flex>
                     </Flex>}

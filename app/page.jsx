@@ -1,11 +1,12 @@
 'use client';
 import { generateUsers, getUsers, getUsersCount } from '@/actions/user';
 import { DataTable } from '@/components/DataTable';
-import { Button, Flex, Group, Input, Pagination, Select } from '@mantine/core';
+import { ActionIcon, Button, Divider, Flex, Grid, Group, Input, Pagination, Select, Space } from '@mantine/core';
+import { DateInput } from '@mantine/dates';
+import { isEmail, isNotEmpty, useForm } from '@mantine/form';
 import { useInputState } from '@mantine/hooks';
-import { IconLoader } from '@tabler/icons-react';
+import { IconLoader, IconSearch, IconX } from '@tabler/icons-react';
 import { useEffect, useState } from 'react';
-import { useAutosave } from 'react-autosave';
 
 export default function Page() {
   const [data, setData] = useState([]);
@@ -13,23 +14,46 @@ export default function Page() {
   const [totalItems, setTotalItems] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [query, setQuery] = useInputState("");
-  const [field, setField] = useState('first_name');
+  const form = useForm({
+    initialValues: { first_name: "", middle_name: "", last_name: "", email: "", gender: "", from: "", to: "" },
+    validate: {
+      email: isEmail('invalid Email'),
+    }
+  });
   const [isLoading, setIsLoading] = useInputState(false);
   const [isInitialRender, setIsInitialRender] = useState(true);
 
   const fetchUsers = async () => {
     setIsLoading(true);
-    setData(await getUsers(field, query.trim(), pageSize, activePage));
-    setTotalItems(await getUsersCount(field, query));
+    const query = {};
+    for (const field in form.values) {
+      if (!!form.isTouched(field) && !!form.isDirty(field) && !!form.values[field]) {
+        if (field === 'gender')
+          query[field] = form.values[field];
+        else if (field === 'from')
+          query['dateOfBirth'] = {
+            ...query['dateOfBirth'],
+            gte: form.values[field]
+          };
+        else if (field === 'to')
+          query['dateOfBirth'] = {
+            ...query['dateOfBirth'],
+            lte: form.values[field]
+          };
+        else
+          query[field] = { contains: form.values[field] };
+      }
+    }
+    console.log(query);
+    setData(await getUsers(query, pageSize, activePage));
+    setTotalItems(await getUsersCount(query));
     setIsLoading(false);
   };
 
-  useAutosave({
-    data: query, interval: 500,
-    onSave: async (_text) => {
-      fetchUsers();
-    },
-  });
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    fetchUsers();
+  };
 
 
   useEffect(() => {
@@ -41,32 +65,66 @@ export default function Page() {
     fetchUsers();
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePage, isInitialRender, field, pageSize]);
+  }, [activePage, pageSize]);
 
-  return <Flex direction={'column'} gap={'xl'}>
-    <Group grow>
-      <Select
-        value={field}
-        onChange={setField}
-        placeholder="search field"
-        defaultValue='first_name'
-        data={[
-          { value: 'first_name', label: "First Name" },
-          { value: 'middle_name', label: "Middle Name" },
-          { value: 'last_name', label: "Last Name" },
-          { value: 'full_name', label: "Full Name" },
-          { value: 'email', label: "Email" },
-          { value: 'gender', label: "Gender" },
-          { value: 'dateOfBirth', label: "DOB" },
-        ]} />
-      <Input value={query} onChange={setQuery} />
-    </Group>
+  return <>
+    <form onSubmit={handleSubmit}>
+      <Grid columns={12}>
+        <Grid.Col span={10}>
+          <Flex direction={'column'} gap={'xl'}>
+            <Group grow>
+              <Input placeholder='First Name' {...form.getInputProps('first_name')} rightSection={
+                form.values.first_name && <ActionIcon onClick={() => { form.setFieldValue('first_name', ''); }}>
+                  <IconX size="1rem" />
+                </ActionIcon>
+              } />
+              <Input placeholder='Middle Name' {...form.getInputProps('middle_name')} rightSection={
+                form.values.middle_name && <ActionIcon onClick={() => { form.setFieldValue('middle_name', ''); }}>
+                  <IconX size="1rem" />
+                </ActionIcon>
+              } />
+            </Group>
+            <Group grow>
+              <Input placeholder='Last Name' {...form.getInputProps('last_name')} rightSection={
+                form.values.last_name && <ActionIcon onClick={() => { form.setFieldValue('last_name', ''); }}>
+                  <IconX size="1rem" />
+                </ActionIcon>
+              } />
+              <Input placeholder='Email' {...form.getInputProps('email')} rightSection={
+                form.values.email && <ActionIcon onClick={() => { form.setFieldValue('email', ''); }}>
+                  <IconX size="1rem" />
+                </ActionIcon>
+              } />
+            </Group>
+            <Group grow>
+              <Select placeholder="Gender"
+                clearable
+                data={[
+                  { value: 'male', label: 'Male' },
+                  { value: 'female', label: 'Female' },
+                  { value: 'other', label: 'other' },
+                ]}
+                {...form.getInputProps('gender')} />
+              <DateInput placeholder="From" {...form.getInputProps('from')} defaultLevel='decade' clearable />
+              <DateInput placeholder="To" {...form.getInputProps('to')} defaultLevel='decade' clearable />
+            </Group>
+          </Flex>
+        </Grid.Col>
+        <Grid.Col span={2}>
+          <Button w={'100%'} h={'100%'} color='gray' type='submit'>
+            <IconSearch size={'10rem'} />
+          </Button>
+        </Grid.Col>
+      </Grid>
+    </form>
     {
       isLoading ?
         <IconLoader size={'4rem'} className='mx-auto mt-32 animate-spin' /> :
-        (query && data.length !== 0) &&
+        (data.length !== 0) &&
         <>
+          <Divider mt={'xl'} />
           <DataTable data={data} />
+          <Divider mb={'xl'} />
           <Flex justify={'center'} gap={'md'}>
             <Select
               value={pageSize}
@@ -82,6 +140,6 @@ export default function Page() {
           </Flex>
         </>
     }
+  </>;
 
-  </Flex >;
 }

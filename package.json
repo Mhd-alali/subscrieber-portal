@@ -12,6 +12,7 @@
     "@emotion/react": "^11.11.1",
     "@emotion/server": "^11.11.0",
     "@mantine/core": "^6.0.20",
+    "@mantine/dates": "^6.0.20",
     "@mantine/form": "^6.0.20",
     "@mantine/hooks": "^6.0.20",
     "@mantine/next": "^6.0.20",
@@ -34,10 +35,8 @@
     "next": "13.4.19",
     "postcss": "8.4.29",
     "react": "18.2.0",
-    "react-autosave": "^0.4.2",
     "react-dom": "18.2.0",
-    "tailwindcss": "3.3.3",
-    "uuid": "^9.0.0"
+    "tailwindcss": "3.3.3"
   },
   "devDependencies": {
     "prisma": "^5.2.0"

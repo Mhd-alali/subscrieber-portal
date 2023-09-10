@@ -10,13 +10,14 @@ export default function UserPage({ params }) {
     useEffect(() => {
         (async () => {
             setUser(await getUserById(+params.id));
-            console.log(user);
         })();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
     return <Container size={'lg'}>
         {user &&
-            <RichTextEdit user={user} />
+            <>
+                <RichTextEdit user={user} />
+            </>
         }
     </Container>;
 }

@@ -36,7 +36,7 @@ export default function RichTextEdit({ user }) {
         fetch('/api/file', {
             method: "POST",
             body: JSON.stringify({ html: editor.getHTML(), name })
-        }).then((response) => {
+        }).then(async (response) => {
             if (response.ok) {
                 response.blob().then((blob) => {
                     const url = window.URL.createObjectURL(blob);
@@ -46,7 +46,7 @@ export default function RichTextEdit({ user }) {
                     a.click();
                 });
             }
-
+            await saveReport(user.id, editor.getHTML());
         }).finally(() => {
             overlayHandler.close();
         });
