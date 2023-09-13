@@ -1,8 +1,9 @@
 'use client';
 import { getUserById } from '@/actions/user';
-import RichTextEdit from '@/components/RichTextEdit';
 import { Container, } from '@mantine/core';
+import dynamic from 'next/dynamic';
 import { useEffect, useState } from 'react';
+const RichTextEdit = dynamic(()=>import('@/components/RichTextEdit'))
 
 export default function UserPage({ params }) {
     const [user, setUser] = useState(null);

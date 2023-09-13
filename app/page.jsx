@@ -44,7 +44,6 @@ export default function Page() {
           query[field] = { contains: form.values[field] };
       }
     }
-    console.log(query);
     setData(await getUsers(query, pageSize, activePage));
     setTotalItems(await getUsersCount(query));
     setIsLoading(false);
